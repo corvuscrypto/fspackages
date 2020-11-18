@@ -302,7 +302,7 @@ class AS1000_MFD_MainMap extends NavSystemPage {
             new SoftKeyElement("SHW CHRT", null),
             new SoftKeyElement("", null)
         ];
-	}
+    }
 }
 class AS1000_MFD_MainMapSlot extends NavSystemElement {
     init(root) {
@@ -583,7 +583,7 @@ class AS1000_MFD_AirportInfos1 extends NavSystemElement {
                 this.runwayNameElement.textContent = infos.runways[this.selectedRunway].designation;
             }
             this.runwaySizeElement.textContent = Math.round(WT_Unit.METER.convert(infos.runways[this.selectedRunway].length, WT_Unit.FOOT)) + "FT x " +
-                        Math.round(WT_Unit.METER.convert(infos.runways[this.selectedRunway].width, WT_Unit.FOOT)) + "FT";
+                Math.round(WT_Unit.METER.convert(infos.runways[this.selectedRunway].width, WT_Unit.FOOT)) + "FT";
             switch (infos.runways[this.selectedRunway].surface) {
                 case 0:
                     this.runwaySurfaceTypeElement.textContent = "Unknown";
@@ -1138,7 +1138,7 @@ class AS1000_MapMenu {
                     break;
                 }
         }
-                return "None";
+        return "None";
     }
 }
 class AS1000_EngineMenu {
@@ -1159,12 +1159,12 @@ class AS1000_EngineMenu {
         let engineDisplayPages = this.engineDisplay.getEngineDisplayPages();
         let i = 0;
         let numEngineDisplayPages = 0;
-        for(let id in engineDisplayPages) {
+        for (let id in engineDisplayPages) {
             elements[i++] = new SoftKeyElement(id, this.selectEngineDisplayPage.bind(this, id), this.getKeyState.bind(this, id));
             numEngineDisplayPages++;
         }
 
-        for(let i = 0; i < extraElements.length; i++) {
+        for (let i = 0; i < extraElements.length; i++) {
             elements[i + numEngineDisplayPages + 1] = extraElements[i];
         }
 
@@ -1176,7 +1176,7 @@ class AS1000_EngineMenu {
     }
     selectEngineDisplayPage(id) {
         let page = this.engineDisplay.selectEnginePage(id);
-        this.switchMenu(this.getSoftKeyMenu(page.buttons.map(button => new SoftKeyElement(button.text, this.performSubAction.bind(this,button)))));
+        this.switchMenu(this.getSoftKeyMenu(page.buttons.map(button => new SoftKeyElement(button.text, this.performSubAction.bind(this, button)))));
     }
     performSubAction(button) {
 
@@ -1198,7 +1198,7 @@ class AS1000_EngineMenu {
         switch (_keyName) {
             case "CYL SLCT":
             case "ASSIST":
-              break;
+                break;
         }
         return "None";
     }

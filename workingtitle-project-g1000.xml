@@ -1,7 +1,8 @@
-<Project Version="2" Name="workingtitle" FolderName="Packages">
+<Project Version="2" Name="workingtitle-project-g1000" FolderName="Packages">
 	<OutputDirectory>.</OutputDirectory>
 	<TemporaryOutputDirectory>_PackageInt</TemporaryOutputDirectory>
 	<Packages>
 		<Package>PackageDefinitions\workingtitle-g1000-metapackage.xml</Package>
 	</Packages>
 </Project>
+

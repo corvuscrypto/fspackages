@@ -141,6 +141,10 @@ class XMLEngineDisplay extends HTMLElement {
                         if (redBlinkElem.length > 0) {
                             gauge.redBlinkCallback = new CompositeLogicXMLElement(this.gps, redBlinkElem[0]);
                         }
+                        let disabledElem = gauges[i].getElementsByTagName("Disabled");
+                        if (disabledElem.length > 0) {
+                            gauge.disabledCallback = new CompositeLogicXMLElement(this.gps, disabledElem[0]);
+                        }
                     }
                 }
             }
@@ -152,9 +156,9 @@ class XMLEngineDisplay extends HTMLElement {
                 let maxElem = gauges[i].getElementsByTagName("Maximum");
                 if (minElem.length > 0 && maxElem.length > 0) {
                     gauge.setLimits(new CompositeLogicXMLElement(this.gps, minElem[0]), new CompositeLogicXMLElement(this.gps, maxElem[0]), this.context);
-                }                 
+                }
                 let columns = [];
-                let columnNodes = gauges[i].getElementsByTagName("Column"); 
+                let columnNodes = gauges[i].getElementsByTagName("Column");
                 for (let c = 0; c < columnNodes.length; c++) {
                     let columnNode = columnNodes[c];
                     columns.push(new CompositeLogicXMLElement(this.gps, columnNode));
@@ -167,7 +171,7 @@ class XMLEngineDisplay extends HTMLElement {
                 let redLineElem = gauges[i].getElementsByTagName("RedLine");
                 if (redLineElem.length > 0) {
                     gauge.setRedLine(redLineElem[0].textContent);
-                }                
+                }
             }
             else if (gauges[i].tagName == "Text") {
                 let textZone = document.createElement("glasscockpit-xmltextzone");
@@ -452,21 +456,21 @@ class XMLHeader extends HTMLElement {
     connectedCallback() {
         let container = document.createElement("div");
         container.setAttribute("style", "display:flex; width:100%; align-items: center; padding:5px;");
-        
+
         let line = document.createElement("div");
         line.setAttribute("style", "height:2px; background:#777; flex:1;");
         container.appendChild(line);
-        
+
         this.textElement = document.createElement("div");
         this.textElement.setAttribute("style", "padding:5px; color:#fff; font-family:Roboto-Bold; font-size:14px;");
         container.appendChild(this.textElement);
-        
+
         line = document.createElement("div");
         line.setAttribute("style", "height:2px; background:#777; flex:1;");
         container.appendChild(line);
-        
+
         this.appendChild(container);
-    }    
+    }
     setText(_value) {
         if (this.textElement.textContent != _value) {
             this.textElement.textContent = _value;
@@ -526,7 +530,7 @@ class XMLColumnGauge extends HTMLElement {
             let barHeight = columnHeight / this.numberOfBars - (verticalSpacing * (this.numberOfBars - 1)) / this.numberOfBars;
 
             let bars = [];
-            for(let i = 0; i < this.numberOfBars; i++) {
+            for (let i = 0; i < this.numberOfBars; i++) {
                 let bar = document.createElementNS(Avionics.SVG.NS, "rect");
                 bar.setAttribute("width", columnWidth);
                 bar.setAttribute("height", barHeight);
@@ -557,9 +561,9 @@ class XMLColumnGauge extends HTMLElement {
 
             this.columns.push({
                 valueCallback: valueCallback,
-                g:g,
-                text:barText,
-                bars:bars
+                g: g,
+                text: barText,
+                bars: bars
             });
         }
 
@@ -576,12 +580,12 @@ class XMLColumnGauge extends HTMLElement {
     update(_context) {
         let min = this.minValueCallback.getValueAsNumber(_context);
         let max = this.maxValueCallback.getValueAsNumber(_context);
-        for(let column of this.columns) {
+        for (let column of this.columns) {
             let value = column.valueCallback.getValueAsNumber(_context);
             let ratio = (value - min) / (max - min);
-            for(let b = 0; b < column.bars.length; b++) {
+            for (let b = 0; b < column.bars.length; b++) {
                 let bar = column.bars[b];
-                bar.setAttribute("visibility",  (1 - b / column.bars.length > ratio) ? "hidden" : "visible");
+                bar.setAttribute("visibility", (1 - b / column.bars.length > ratio) ? "hidden" : "visible");
             }
         }
         if (this.selectedColumn != null && this.selectedColumn.valueCallback) {
@@ -624,6 +628,7 @@ class XMLGauge extends HTMLElement {
         this.forcedEndText = null;
         this.isAlerting = false;
         this.isCaution = false;
+        this.disabled = false;
         this.sizePercent = 100;
         this.colorZones = [];
         this.colorLines = [];
@@ -668,26 +673,39 @@ class XMLGauge extends HTMLElement {
         }
         let newValueCaution = this.yellowBlinkCallback ? this.yellowBlinkCallback.getValue(_context) : null;
         let newValueAlert = this.redBlinkCallback ? this.redBlinkCallback.getValue(_context) : null;
-
-        if (newValueAlert && newValueAlert != 0) {
-            if (!this.isAlerting) {
-                console.log("Switching to alert mode")
-                this.isAlerting = true;
-                this.isCaution = false;
-                this.computeAlertBackgrounds();
-                this.setAttribute("State", "Alert");
-            }
-        } else if (newValueCaution && newValueCaution != 0) {
-            if (!this.isCaution) {
-                console.log("Switching to caution mode")
+        let newValueDisabled = this.disabledCallback ? this.disabledCallback.getValue(_context) : null;
+        if (newValueDisabled && newValueDisabled != 0) {
+            if (!this.disabled) {
+                console.log("Switching to disabled mode")
                 this.isAlerting = false;
-                this.isCaution = true;
-                this.computeCautionBackgrounds();
-                this.setAttribute("State", "Caution");
+                this.isCaution = false;
+                this.disabled = true;
+                this.computeDisabled();
+                this.setAttribute("State", "Disabled");
             }
         } else {
-            this.isAlerting = this.isCaution = false;
-            this.setAttribute("State", "");
+            if (newValueAlert && newValueAlert != 0) {
+                if (!this.isAlerting) {
+                    console.log("Switching to alert mode")
+                    this.isAlerting = true;
+                    this.isCaution = false;
+                    this.disabled = false;
+                    this.computeAlertBackgrounds();
+                    this.setAttribute("State", "Alert");
+                }
+            } else if (newValueCaution && newValueCaution != 0) {
+                if (!this.isCaution) {
+                    console.log("Switching to caution mode")
+                    this.isAlerting = false;
+                    this.isCaution = true;
+                    this.disabled = false;
+                    this.computeCautionBackgrounds();
+                    this.setAttribute("State", "Caution");
+                }
+            } else {
+                this.isAlerting = this.isCaution = this.disabled = false;
+                this.setAttribute("State", "");
+            }
         }
     }
 }
@@ -719,7 +737,10 @@ class XMLCircularGauge extends XMLGauge {
         this.forceTextColor = "";
         this.textPrecision = 0;
         this.graduations = null;
-        
+        this.disabledText = "";
+        this.disabledBackgroundColor = "red";
+        this.disabledBackgroundOpacity = "0.20";
+        this.disabledMarker = null;
     }
     setStyle(_styleElem) {
         if (_styleElem) {
@@ -734,6 +755,18 @@ class XMLCircularGauge extends XMLGauge {
             let precisionElem = _styleElem.getElementsByTagName("ValuePrecision");
             if (precisionElem.length > 0) {
                 this.textPrecision = parseInt(precisionElem[0].textContent);
+            }
+            let disabledTextElem = _styleElem.getElementsByTagName("DisabledText");
+            if (disabledTextElem.length > 0) {
+                this.disabledText = disabledTextElem[0].textContent;
+            }
+            let disabledBackgroundColorElem = _styleElem.getElementsByTagName("DisabledBackgroundColor");
+            if (disabledBackgroundColorElem.length > 0) {
+                this.disabledBackgroundColor = disabledBackgroundColorElem[0].textContent;
+            }
+            let disabledBackgroundOpacityElem = _styleElem.getElementsByTagName("DisabledBackgroundOpacity");
+            if (disabledBackgroundOpacityElem.length > 0) {
+                this.disabledBackgroundOpacity = disabledBackgroundOpacityElem[0].textContent;
             }
             let startElem = _styleElem.getElementsByTagName("BeginAngle");
             if (startElem.length > 0) {
@@ -783,6 +816,7 @@ class XMLCircularGauge extends XMLGauge {
         mainArc.setAttribute("stroke-width", "2");
         mainArc.setAttribute("fill", "none");
         this.rootSvg.appendChild(mainArc);
+
         let beginLimit = document.createElementNS(Avionics.SVG.NS, "rect");
         beginLimit.setAttribute("x", "10");
         beginLimit.setAttribute("y", "39");
@@ -798,8 +832,8 @@ class XMLCircularGauge extends XMLGauge {
         endLimit.setAttribute("height", "2");
         endLimit.setAttribute("fill", "white");
         endLimit.setAttribute("transform", "rotate(" + this.endAngle + " 50 40)");
-        this.rootSvg.appendChild(endLimit);	
-        
+        this.rootSvg.appendChild(endLimit);
+
         this.cursor = document.createElementNS(Avionics.SVG.NS, "polygon");
         switch (this.cursorType) {
             case 0:
@@ -840,7 +874,7 @@ class XMLCircularGauge extends XMLGauge {
         this.valueText_cautionbg = document.createElementNS(Avionics.SVG.NS, "rect");
         this.valueText_cautionbg.setAttribute("fill-opacity", "0");
         this.valueText_cautionbg.setAttribute("CautionBlink", "Background");
-        this.rootSvg.appendChild(this.valueText_cautionbg);        
+        this.rootSvg.appendChild(this.valueText_cautionbg);
         this.titleText_alertbg = document.createElementNS(Avionics.SVG.NS, "rect");
         this.titleText_alertbg.setAttribute("fill-opacity", "0");
         this.titleText_alertbg.setAttribute("AlertBlink", "Background");
@@ -893,6 +927,32 @@ class XMLCircularGauge extends XMLGauge {
         this.valueText.setAttribute("CautionBlink", "Text");
         this.valueText.setAttribute("AlertBlink", "Text");
         this.rootSvg.appendChild(this.valueText);
+
+        // Create the disabled markers
+        this.disabledMarker = document.createElementNS(Avionics.SVG.NS, "g");
+        this.disabledMarker.setAttribute("viewBox", this.rootSvg.getAttribute("viewBox"));
+        this.disabledMarker.setAttribute("style", "display: block");
+        let disabledRect = document.createElementNS(Avionics.SVG.NS, "rect");
+        disabledRect.setAttribute("fill", this.disabledBackgroundColor);
+        disabledRect.setAttribute("opacity", this.disabledBackgroundOpacity);
+        disabledRect.setAttribute("width", "100%");
+        disabledRect.setAttribute("height", "100%");
+        this.disabledMarker.appendChild(disabledRect);
+        let disabledLine1 = document.createElementNS(Avionics.SVG.NS, "line");
+        disabledLine1.setAttribute("stroke", "red")
+        disabledLine1.setAttribute("x1", "0%")
+        disabledLine1.setAttribute("x2", "100%")
+        disabledLine1.setAttribute("y1", "0%")
+        disabledLine1.setAttribute("y2", "100%")
+        let disabledLine2 = document.createElementNS(Avionics.SVG.NS, "line");
+        disabledLine2.setAttribute("stroke", "red")
+        disabledLine2.setAttribute("x1", "0%")
+        disabledLine2.setAttribute("x2", "100%")
+        disabledLine2.setAttribute("y1", "100%")
+        disabledLine2.setAttribute("y2", "0%")
+        this.disabledMarker.appendChild(disabledLine2)
+        this.disabledMarker.appendChild(disabledLine1)
+        this.rootSvg.appendChild(this.disabledMarker)
     }
     addColorZone(_begin, _end, _color, _context) {
         let colorZone = document.createElementNS(Avionics.SVG.NS, "path");
@@ -932,37 +992,45 @@ class XMLCircularGauge extends XMLGauge {
         }
     }
     updateValue(_value) {
-        if (_value != this.lastValue) {
-            this.cursor.setAttribute("transform", "rotate(" + this.valueToAngle(Math.max(Math.min(_value, this.maxValue), this.minValue)) + " 50 40)");
-            this.valueText.textContent = this.textIncrement != 1 ? (Math.round(_value / this.textIncrement) * this.textIncrement).toFixed(this.textPrecision) : _value.toFixed(this.textPrecision);
-            this.lastValue = _value;
-            if (this.forceTextColor == "") {
-                let colorFound = false;
-                for (let i = this.colorZones.length - 1; i >= 0; i--) {
-                    if (_value >= this.colorZones[i].lastBegin && _value <= this.colorZones[i].lastEnd) {
-                        Avionics.Utils.diffAndSetAttribute(this.valueText, "fill", this.colorZones[i].element.getAttribute("fill"));
-                        colorFound = true;
-                        break;
+        this.computeDisabled();
+        if (!this.disabled) {
+            if (_value != this.lastValue) {
+                this.cursor.setAttribute("style", "display: block");
+                this.cursor.setAttribute("transform", "rotate(" + this.valueToAngle(Math.max(Math.min(_value, this.maxValue), this.minValue)) + " 50 40)");
+                this.valueText.textContent = this.textIncrement != 1 ? (Math.round(_value / this.textIncrement) * this.textIncrement).toFixed(this.textPrecision) : _value.toFixed(this.textPrecision);
+                this.lastValue = _value;
+                if (this.forceTextColor == "") {
+                    let colorFound = false;
+                    for (let i = this.colorZones.length - 1; i >= 0; i--) {
+                        if (_value >= this.colorZones[i].lastBegin && _value <= this.colorZones[i].lastEnd) {
+                            Avionics.Utils.diffAndSetAttribute(this.valueText, "fill", this.colorZones[i].element.getAttribute("fill"));
+                            colorFound = true;
+                            break;
+                        }
+                    }
+                    if (!colorFound) {
+                        Avionics.Utils.diffAndSetAttribute(this.valueText, "fill", "white");
                     }
                 }
-                if (!colorFound) {
-                    Avionics.Utils.diffAndSetAttribute(this.valueText, "fill", "white");
+                else {
+                    Avionics.Utils.diffAndSetAttribute(this.valueText, "fill", this.forceTextColor);
+                }
+                if (this.valueText) {
+                    let valueBbox = this.valueText.getBBox();
+                    this.valueText_alertbg.setAttribute("x", (valueBbox.x - 1).toString());
+                    this.valueText_alertbg.setAttribute("y", (valueBbox.y - 1).toString());
+                    this.valueText_alertbg.setAttribute("width", (valueBbox.width + 2).toString());
+                    this.valueText_alertbg.setAttribute("height", (valueBbox.height + 2).toString());
+                    this.valueText_cautionbg.setAttribute("x", (valueBbox.x - 1).toString());
+                    this.valueText_cautionbg.setAttribute("y", (valueBbox.y - 1).toString());
+                    this.valueText_cautionbg.setAttribute("width", (valueBbox.width + 2).toString());
+                    this.valueText_cautionbg.setAttribute("height", (valueBbox.height + 2).toString());
                 }
             }
-            else {
-                Avionics.Utils.diffAndSetAttribute(this.valueText, "fill", this.forceTextColor);
-            }
-            if (this.valueText) {
-                let valueBbox = this.valueText.getBBox();
-                this.valueText_alertbg.setAttribute("x", (valueBbox.x - 1).toString());
-                this.valueText_alertbg.setAttribute("y", (valueBbox.y - 1).toString());
-                this.valueText_alertbg.setAttribute("width", (valueBbox.width + 2).toString());
-                this.valueText_alertbg.setAttribute("height", (valueBbox.height + 2).toString());
-                this.valueText_cautionbg.setAttribute("x", (valueBbox.x - 1).toString());
-                this.valueText_cautionbg.setAttribute("y", (valueBbox.y - 1).toString());
-                this.valueText_cautionbg.setAttribute("width", (valueBbox.width + 2).toString());
-                this.valueText_cautionbg.setAttribute("height", (valueBbox.height + 2).toString());                
-            }
+        } else {
+            // Set to the disabled values etc.
+            this.cursor.setAttribute("style", "display: none");
+            this.valueText.textContent = this.disabledText;
         }
     }
     valueToAngle(_value) {
@@ -976,11 +1044,11 @@ class XMLCircularGauge extends XMLGauge {
         if (this.forcedEndText == null) {
             this.endText.textContent = _end.toString();
         }
-        
+
         if (this.graduations != null) {
             this.customGraduationGroup.innerHTML = "";
             for (let i = 0; i < this.graduations.length; i++) {
-                let graduation = this.graduations[i];			
+                let graduation = this.graduations[i];
                 let el = document.createElementNS(Avionics.SVG.NS, "rect");
                 el.setAttribute("x", "10");
                 el.setAttribute("y", "39");
@@ -989,7 +1057,7 @@ class XMLCircularGauge extends XMLGauge {
                 el.setAttribute("fill", "white");
                 el.setAttribute("transform", "rotate(" + this.valueToAngle(graduation) + " 50 40)");
                 this.customGraduationGroup.appendChild(el);
-            }	
+            }
         }
     }
     setTitleAndUnit(_title, _unit) {
@@ -1007,7 +1075,7 @@ class XMLCircularGauge extends XMLGauge {
         this.unitText_cautionbg.setAttribute("y", (unitBbox.y - 1).toString());
         this.unitText_cautionbg.setAttribute("width", (unitBbox.width + 2).toString());
         this.unitText_cautionbg.setAttribute("height", (unitBbox.height + 2).toString());
-    }    
+    }
     computeAlertBackgrounds() {
         let titleBbox = this.titleText.getBBox();
         this.titleText_alertbg.setAttribute("x", (titleBbox.x - 1).toString());
@@ -1019,6 +1087,13 @@ class XMLCircularGauge extends XMLGauge {
         this.unitText_alertbg.setAttribute("y", (unitBbox.y - 1).toString());
         this.unitText_alertbg.setAttribute("width", (unitBbox.width + 2).toString());
         this.unitText_alertbg.setAttribute("height", (unitBbox.height + 2).toString());
+    }
+    computeDisabled() {
+        if (this.disabled) {
+            this.disabledMarker.setAttribute("style", "display: block");
+        } else {
+            this.disabledMarker.setAttribute("style", "display: none");
+        }
     }
     setGraduations(_spaceBetween, _withText = false) {
         for (let i = this.minValue + _spaceBetween; i < this.maxValue; i += _spaceBetween) {
@@ -1055,6 +1130,10 @@ class XMLHorizontalGauge extends XMLGauge {
         this.isReverseY = false;
         this.textIncrement = 1;
         this.textPrecision = 0;
+        this.disabledText = "";
+        this.disabledBackgroundColor = "red";
+        this.disabledBackgroundOpacity = "0.20";
+        this.disabledMarker = null;
     }
     setStyle(_styleElem) {
         if (_styleElem) {
@@ -1090,6 +1169,18 @@ class XMLHorizontalGauge extends XMLGauge {
             let precisionElem = _styleElem.getElementsByTagName("ValuePrecision");
             if (precisionElem.length > 0) {
                 this.textPrecision = parseInt(precisionElem[0].textContent);
+            }
+            let disabledTextElem = _styleElem.getElementsByTagName("DisabledText");
+            if (disabledTextElem.length > 0) {
+                this.disabledText = disabledTextElem[0].textContent;
+            }
+            let disabledBackgroundColorElem = _styleElem.getElementsByTagName("DisabledBackgroundColor");
+            if (disabledBackgroundColorElem.length > 0) {
+                this.disabledBackgroundColor = disabledBackgroundColorElem[0].textContent;
+            }
+            let disabledBackgroundOpacityElem = _styleElem.getElementsByTagName("DisabledBackgroundOpacity");
+            if (disabledBackgroundOpacityElem.length > 0) {
+                this.disabledBackgroundOpacity = disabledBackgroundOpacityElem[0].textContent;
             }
         }
     }
@@ -1158,7 +1249,7 @@ class XMLHorizontalGauge extends XMLGauge {
         this.titleText_cautionbg = document.createElementNS(Avionics.SVG.NS, "rect");
         this.titleText_cautionbg.setAttribute("fill-opacity", "0");
         this.titleText_cautionbg.setAttribute("CautionBlink", "Background");
-        this.rootSvg.appendChild(this.titleText_cautionbg);        
+        this.rootSvg.appendChild(this.titleText_cautionbg);
         this.titleText_alertbg = document.createElementNS(Avionics.SVG.NS, "rect");
         this.titleText_alertbg.setAttribute("fill-opacity", "0");
         this.titleText_alertbg.setAttribute("AlertBlink", "Background");
@@ -1182,7 +1273,7 @@ class XMLHorizontalGauge extends XMLGauge {
         this.valueText_cautionbg = document.createElementNS(Avionics.SVG.NS, "rect");
         this.valueText_cautionbg.setAttribute("fill-opacity", "0");
         this.valueText_cautionbg.setAttribute("CautionBlink", "Background");
-        this.rootSvg.appendChild(this.valueText_cautionbg);        
+        this.rootSvg.appendChild(this.valueText_cautionbg);
         this.valueText_alertbg = document.createElementNS(Avionics.SVG.NS, "rect");
         this.valueText_alertbg.setAttribute("fill-opacity", "0");
         this.valueText_alertbg.setAttribute("AlertBlink", "Background");
@@ -1213,6 +1304,32 @@ class XMLHorizontalGauge extends XMLGauge {
                 this.rootSvg.appendChild(this.valueText);
                 break;
         }
+
+        // Create the disabled markers
+        this.disabledMarker = document.createElementNS(Avionics.SVG.NS, "g");
+        this.disabledMarker.setAttribute("viewBox", this.rootSvg.getAttribute("viewBox"));
+        this.disabledMarker.setAttribute("style", "display: block");
+        let disabledRect = document.createElementNS(Avionics.SVG.NS, "rect");
+        disabledRect.setAttribute("fill", this.disabledBackgroundColor);
+        disabledRect.setAttribute("opacity", this.disabledBackgroundOpacity);
+        disabledRect.setAttribute("width", "100%");
+        disabledRect.setAttribute("height", "100%");
+        this.disabledMarker.appendChild(disabledRect);
+        let disabledLine1 = document.createElementNS(Avionics.SVG.NS, "line");
+        disabledLine1.setAttribute("stroke", "red")
+        disabledLine1.setAttribute("x1", "0%")
+        disabledLine1.setAttribute("x2", "100%")
+        disabledLine1.setAttribute("y1", "0%")
+        disabledLine1.setAttribute("y2", "100%")
+        let disabledLine2 = document.createElementNS(Avionics.SVG.NS, "line");
+        disabledLine2.setAttribute("stroke", "red")
+        disabledLine2.setAttribute("x1", "0%")
+        disabledLine2.setAttribute("x2", "100%")
+        disabledLine2.setAttribute("y1", "100%")
+        disabledLine2.setAttribute("y2", "0%")
+        this.disabledMarker.appendChild(disabledLine2)
+        this.disabledMarker.appendChild(disabledLine1)
+        this.rootSvg.appendChild(this.disabledMarker)
     }
     addColorZone(_begin, _end, _color, _context) {
         let colorZone = document.createElementNS(Avionics.SVG.NS, "rect");
@@ -1261,37 +1378,46 @@ class XMLHorizontalGauge extends XMLGauge {
         }
     }
     updateValue(_value, _value2) {
-        if (_value != this.lastValue) {
-            let translate = (((Math.max(Math.min(_value, this.maxValue), this.minValue) - this.minValue) / (this.maxValue - this.minValue)) * (this.endX - this.beginX));
-            this.cursor.setAttribute("transform", "translate(" + translate + " 0)");
-            if (this.cursorLabel) {
-                this.cursorLabel.setAttribute("transform", "translate(" + translate + " 0)");
-            }
-            this.lastValue = _value;
-            if (this.valueText) {
-                this.valueText.textContent = this.textIncrement != 1 ? (Math.round(_value / this.textIncrement) * this.textIncrement).toFixed(this.textPrecision) : _value.toFixed(this.textPrecision);
-                let colorFound = false;
-                for (let i = this.colorZones.length - 1; i >= 0; i--) {
-                    if (_value >= this.colorZones[i].lastBegin && _value <= this.colorZones[i].lastEnd) {
-                        this.valueText.setAttribute("fill", this.colorZones[i].element.getAttribute("fill"));
-                        colorFound = true;
-                        break;
+        this.computeDisabled();
+        if (!this.disabled) {
+            if (_value != this.lastValue) {
+                let translate = (((Math.max(Math.min(_value, this.maxValue), this.minValue) - this.minValue) / (this.maxValue - this.minValue)) * (this.endX - this.beginX));
+                this.cursor.setAttribute("transform", "translate(" + translate + " 0)");
+                if (this.cursorLabel) {
+                    this.cursorLabel.setAttribute("transform", "translate(" + translate + " 0)");
+                }
+                this.lastValue = _value;
+                if (this.valueText) {
+                    this.valueText.textContent = this.textIncrement != 1 ? (Math.round(_value / this.textIncrement) * this.textIncrement).toFixed(this.textPrecision) : _value.toFixed(this.textPrecision);
+                    let colorFound = false;
+                    for (let i = this.colorZones.length - 1; i >= 0; i--) {
+                        if (_value >= this.colorZones[i].lastBegin && _value <= this.colorZones[i].lastEnd) {
+                            this.valueText.setAttribute("fill", this.colorZones[i].element.getAttribute("fill"));
+                            colorFound = true;
+                            break;
+                        }
+                    }
+                    if (!colorFound) {
+                        this.valueText.setAttribute("fill", "white");
                     }
                 }
-                if (!colorFound) {
-                    this.valueText.setAttribute("fill", "white");
+                if (this.valueText) {
+                    let valueBbox = this.valueText.getBBox();
+                    this.valueText_cautionbg.setAttribute("x", (valueBbox.x - 1).toString());
+                    this.valueText_cautionbg.setAttribute("y", (valueBbox.y - 1).toString());
+                    this.valueText_cautionbg.setAttribute("width", (valueBbox.width + 2).toString());
+                    this.valueText_cautionbg.setAttribute("height", (valueBbox.height + 2).toString());
+                    this.valueText_alertbg.setAttribute("x", (valueBbox.x - 1).toString());
+                    this.valueText_alertbg.setAttribute("y", (valueBbox.y - 1).toString());
+                    this.valueText_alertbg.setAttribute("width", (valueBbox.width + 2).toString());
+                    this.valueText_alertbg.setAttribute("height", (valueBbox.height + 2).toString());
                 }
             }
+        } else {
+            // Set to the disabled values etc.
+            this.cursor.setAttribute("style", "display: none");
             if (this.valueText) {
-                let valueBbox = this.valueText.getBBox();
-                this.valueText_cautionbg.setAttribute("x", (valueBbox.x - 1).toString());
-                this.valueText_cautionbg.setAttribute("y", (valueBbox.y - 1).toString());
-                this.valueText_cautionbg.setAttribute("width", (valueBbox.width + 2).toString());
-                this.valueText_cautionbg.setAttribute("height", (valueBbox.height + 2).toString());
-                this.valueText_alertbg.setAttribute("x", (valueBbox.x - 1).toString());
-                this.valueText_alertbg.setAttribute("y", (valueBbox.y - 1).toString());
-                this.valueText_alertbg.setAttribute("width", (valueBbox.width + 2).toString());
-                this.valueText_alertbg.setAttribute("height", (valueBbox.height + 2).toString());
+                this.valueText.textContent = this.disabledText;
             }
         }
     }
@@ -1311,6 +1437,13 @@ class XMLHorizontalGauge extends XMLGauge {
         this.titleText_alertbg.setAttribute("y", (titleBbox.y - 1).toString());
         this.titleText_alertbg.setAttribute("width", (titleBbox.width + 2).toString());
         this.titleText_alertbg.setAttribute("height", (titleBbox.height + 2).toString());
+    }
+    computeDisabled() {
+        if (this.disabled) {
+            this.disabledMarker.setAttribute("style", "display: block");
+        } else {
+            this.disabledMarker.setAttribute("style", "display: none");
+        }
     }
     setLimitValues(_begin, _end) {
         super.setLimitValues(_begin, _end);
@@ -1351,6 +1484,9 @@ class XMLHorizontalDoubleGauge extends XMLGauge {
         this.endX = 90;
         this.valuePos = 0;
         this.textIncrement = 1;
+        this.disabledText = "";
+        this.disabledBackgroundColor = "red";
+        this.disabledBackgroundOpacity = "0.20";
     }
     setStyle(_styleElem) {
         if (_styleElem) {
@@ -1729,7 +1865,7 @@ class XMLVerticalGauge extends XMLGauge {
         this.valueText_cautionbg = document.createElementNS(Avionics.SVG.NS, "rect");
         this.valueText_cautionbg.setAttribute("fill-opacity", "0");
         this.valueText_cautionbg.setAttribute("CautionBlink", "Background");
-        this.rootSvg.appendChild(this.valueText_cautionbg);        
+        this.rootSvg.appendChild(this.valueText_cautionbg);
         this.valueText_alertbg = document.createElementNS(Avionics.SVG.NS, "rect");
         this.valueText_alertbg.setAttribute("fill-opacity", "0");
         this.valueText_alertbg.setAttribute("AlertBlink", "Background");

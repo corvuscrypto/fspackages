@@ -20,7 +20,7 @@
 		<Title>System</Title>
 		<Node>EngineDisplaySystem</Node>
 	</EngineDisplayPage>
-	
+
 	<EngineDisplayLean>
 		<Gauge>
 			<Type>Circular</Type>
@@ -30,6 +30,7 @@
 			<Minimum>10</Minimum>
 			<Maximum>35</Maximum>
 			<Style>
+				<DisabledText>__._</DisabledText>
 				<TextIncrement>0.1</TextIncrement>
 				<ForceTextColor>white</ForceTextColor>
 				<ValuePrecision>1</ValuePrecision>
@@ -48,6 +49,12 @@
 				<Begin>15</Begin>
 				<End>30</End>
 			</ColorZone>
+			<Disabled>
+				<LowerEqual>
+					<Simvar name="PROP RPM:1" unit="rpm"/>
+					<Constant>10</Constant>
+				</LowerEqual>
+			</Disabled>
 		  </Gauge>
 
 		  <Gauge>
@@ -58,6 +65,7 @@
 			<Minimum>0</Minimum>
 			<Maximum>3000</Maximum>
 			<Style>
+				<DisabledText>____</DisabledText>
 				<TextIncrement>10</TextIncrement>
 				<ForceTextColor>white</ForceTextColor>
 				<Graduations>1200,1800,2100,2300,2500,2700</Graduations>
@@ -86,10 +94,16 @@
 					<Constant>2701</Constant>
 				</Greater>
 			</RedBlink>
+			<Disabled>
+				<LowerEqual>
+					<Simvar name="PROP RPM:1" unit="rpm"/>
+					<Constant>10</Constant>
+				</LowerEqual>
+			</Disabled>
 		</Gauge>
 
         <Text>
-			<Left fontsize="8">FFLOW GPH</Left>			
+			<Left fontsize="8">FFLOW GPH</Left>
 			<Right fontsize="8">
 				<ToFixed precision="1">
 					<Simvar name="ENG FUEL FLOW GPH:1" unit="gallons per hour"/>
@@ -125,7 +139,7 @@
         </ColumnsGauge>
 
 	</EngineDisplayLean>
-	
+
 	<EngineDisplaySystem>
 		<Gauge>
 			<Type>Circular</Type>
@@ -135,6 +149,7 @@
 			<Minimum>10</Minimum>
 			<Maximum>35</Maximum>
 			<Style>
+				<DisabledText>__._</DisabledText>
 				<TextIncrement>0.1</TextIncrement>
 				<ForceTextColor>white</ForceTextColor>
 				<ValuePrecision>1</ValuePrecision>
@@ -153,6 +168,12 @@
 				<Begin>15</Begin>
 				<End>30</End>
 			</ColorZone>
+			<Disabled>
+				<LowerEqual>
+					<Simvar name="PROP RPM:1" unit="rpm"/>
+					<Constant>10</Constant>
+				</LowerEqual>
+			</Disabled>
 		  </Gauge>
 
 		  <Gauge>
@@ -163,6 +184,7 @@
 			<Minimum>0</Minimum>
 			<Maximum>3000</Maximum>
 			<Style>
+				<DisabledText>____</DisabledText>
 				<TextIncrement>10</TextIncrement>
 				<ForceTextColor>white</ForceTextColor>
 				<Graduations>1200,1800,2100,2300,2500,2700</Graduations>
@@ -191,54 +213,60 @@
 					<Constant>2701</Constant>
 				</Greater>
 			</RedBlink>
+			<Disabled>
+				<LowerEqual>
+					<Simvar name="PROP RPM:1" unit="rpm"/>
+					<Constant>10</Constant>
+				</LowerEqual>
+			</Disabled>
 		</Gauge>
-		
+
 		<Header>
 			<Text>SYSTEM</Text>
 		</Header>
-		
+
 		<Text>
-			<Left fontsize="8">OIL °C</Left>			
+			<Left fontsize="8">OIL °C</Left>
 			<Right fontsize="8">
 				<ToFixed precision="0">
 					<Simvar name="ENG OIL TEMPERATURE:1" unit="celsius"/>
 				</ToFixed>
 			</Right>
 		</Text>
-		
+
 		<Text>
-			<Left fontsize="8">OIL PSI</Left>			
+			<Left fontsize="8">OIL PSI</Left>
 			<Right fontsize="8">
 				<ToFixed precision="1">
 					<Simvar name="ENG OIL PRESSURE:1" unit="psi"/>
 				</ToFixed>
 			</Right>
 		</Text>
-		
+
 		<Header>
 			<Text>FUEL CALC</Text>
 		</Header>
-		
+
 		<Text>
-			<Left fontsize="8">FFLOW GPH</Left>			
+			<Left fontsize="8">FFLOW GPH</Left>
 			<Right fontsize="8">
 				<ToFixed precision="1">
 					<Simvar name="ENG FUEL FLOW GPH:1" unit="gallons per hour"/>
 				</ToFixed>
 			</Right>
 		</Text>
-		
+
 		<Text>
-			<Left fontsize="8">GAL REM</Left>			
+			<Left fontsize="8">GAL REM</Left>
 			<Right fontsize="8">
 				<ToFixed precision="1">
 					<Simvar name="FUEL TOTAL QUANTITY:1" unit="gallon"/>
 				</ToFixed>
 			</Right>
 		</Text>
-		
+
 		<Text>
-			<Left fontsize="8">GAL USED</Left>			
+			<Left fontsize="8">GAL USED</Left>
 			<Right fontsize="8">
 				<ToFixed precision="1">
 					<Substract>
@@ -250,24 +278,24 @@
 				</ToFixed>
 			</Right>
 		</Text>
-		
+
 		<Text>
-			<Left fontsize="8">ENDUR</Left>			
+			<Left fontsize="8">ENDUR</Left>
 			<Right fontsize="8">
 				<Duration>
-					<Multiply>					
+					<Multiply>
 						<Divide>
 							<Simvar name="FUEL TOTAL QUANTITY:1" unit="gallon"/>
 							<Simvar name="ENG FUEL FLOW GPH:1" unit="gallons per hour"/>
 						</Divide>
-						<Constant>3600</Constant>						
+						<Constant>3600</Constant>
 					</Multiply>
 				</Duration>
 			</Right>
 		</Text>
-		
+
 		<Text>
-			<Left fontsize="8">RANGE NM</Left>			
+			<Left fontsize="8">RANGE NM</Left>
 			<Right fontsize="8">
                 <If>
                     <Condition>
@@ -293,23 +321,23 @@
                 </If>
 			</Right>
 		</Text>
-		
+
 		<Header>
 			<Text>ELECTRICAL</Text>
 		</Header>
-		
+
 		<Text>
-			<Left fontsize="8">1</Left>	
-			<Center fontsize="8">ALT LOAD %</Center>	
-			<Right fontsize="8">2</Right>	
+			<Left fontsize="8">1</Left>
+			<Center fontsize="8">ALT LOAD %</Center>
+			<Right fontsize="8">2</Right>
 		</Text>
-		
+
 		<Text>
 			<Left fontsize="8">
 				<ToFixed precision="0">
 					<Simvar name="ELECTRICAL GENALT BUS AMPS:1" unit="amp"/>
 				</ToFixed>
-			</Left>	
+			</Left>
 			<Right fontsize="8">
 				<ToFixed precision="0">
 					<Multiply>
@@ -317,26 +345,26 @@
 						<Constant>5</Constant>
 					</Multiply>
 				</ToFixed>
-			</Right>	
+			</Right>
 		</Text>
-		
+
 		<Text>
-			<Left fontsize="8">1</Left>	
-			<Center fontsize="8">BUS VOLTS</Center>	
-			<Right fontsize="8">2</Right>	
+			<Left fontsize="8">1</Left>
+			<Center fontsize="8">BUS VOLTS</Center>
+			<Right fontsize="8">2</Right>
 		</Text>
-		
+
 		<Text>
 			<Left fontsize="8">
 				<ToFixed precision="1">
 					<Simvar name="ELECTRICAL MAIN BUS VOLTAGE:1" unit="volts"/>
 				</ToFixed>
-			</Left>	
+			</Left>
 			<Right fontsize="8">
 				<ToFixed precision="1">
 					<Simvar name="ELECTRICAL MAIN BUS VOLTAGE:2" unit="volts"/>
 				</ToFixed>
-			</Right>	
+			</Right>
 		</Text>
 	</EngineDisplaySystem>
 
@@ -352,6 +380,7 @@
 		<Minimum>10</Minimum>
 		<Maximum>35</Maximum>
 		<Style>
+			<DisabledText>__._</DisabledText>
 			<TextIncrement>0.1</TextIncrement>
 			<ForceTextColor>white</ForceTextColor>
 			<ValuePrecision>1</ValuePrecision>
@@ -370,6 +399,12 @@
 			<Begin>15</Begin>
 			<End>30</End>
 		</ColorZone>
+		<Disabled>
+			<LowerEqual>
+				<Simvar name="PROP RPM:1" unit="rpm"/>
+				<Constant>10</Constant>
+			</LowerEqual>
+		</Disabled>
 	  </Gauge>
 
 	  <Gauge>
@@ -380,6 +415,7 @@
 		<Minimum>0</Minimum>
 		<Maximum>3000</Maximum>
 		<Style>
+			<DisabledText>____</DisabledText>
 			<TextIncrement>10</TextIncrement>
 			<ForceTextColor>white</ForceTextColor>
 			<Graduations>1200,1800,2100,2300,2500,2700</Graduations>
@@ -408,6 +444,12 @@
 				<Constant>2701</Constant>
 			</Greater>
 		</RedBlink>
+		<Disabled>
+			<LowerEqual>
+				<Simvar name="PROP RPM:1" unit="rpm"/>
+				<Constant>10</Constant>
+			</LowerEqual>
+		</Disabled>
 	  </Gauge>
 
 	  <Gauge>
@@ -417,7 +459,7 @@
 			<TextIncrement>0.1</TextIncrement>
 			<ValuePrecision>1</ValuePrecision>
 			<ForceTextColor>white</ForceTextColor>
-		</Style>		
+		</Style>
 		<ID>Piston_FFlowGauge</ID>
 		<Title>FFLOW</Title>
 		<Unit>GPH</Unit>
@@ -438,6 +480,12 @@
 		</ColorZone>
 		<GraduationLength></GraduationLength>
 		<GraduationTextLength></GraduationTextLength>
+		<Disabled>
+			<LowerEqual>
+				<Simvar name="PROP RPM:1" unit="rpm"/>
+				<Constant>10</Constant>
+			</LowerEqual>
+		</Disabled>
 	  </Gauge>
 
 	  <Gauge>
@@ -463,6 +511,12 @@
 			<Begin>238</Begin>
 			<End>250</End>
 		</ColorZone>
+		<Disabled>
+			<LowerEqual>
+				<Simvar name="PROP RPM:1" unit="rpm"/>
+				<Constant>10</Constant>
+			</LowerEqual>
+		</Disabled>
 	  </Gauge>
 
 	  <Gauge>
@@ -498,6 +552,12 @@
 				<Constant>120</Constant>
 			</Greater>
 		</RedBlink>
+		<Disabled>
+			<LowerEqual>
+				<Simvar name="PROP RPM:1" unit="rpm"/>
+				<Constant>10</Constant>
+			</LowerEqual>
+		</Disabled>
 	  </Gauge>
 
 	  <Gauge>
@@ -544,6 +604,12 @@
 				</Lower>
 			</Or>
 		</RedBlink>
+		<Disabled>
+			<LowerEqual>
+				<Simvar name="PROP RPM:1" unit="rpm"/>
+				<Constant>10</Constant>
+			</LowerEqual>
+		</Disabled>
 	  </Gauge>
 
 	  <Gauge>

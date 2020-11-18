@@ -1,6 +1,6 @@
-<AssetPackage Name="workingtitle-g1000" Version="0.3.2">
+<AssetPackage Name="workingtitle-g1000-metapackage" Version="0.3.2">
 	<ItemSettings>
-		<ContentType>CUSTOM</ContentType>
+		<ContentType>UNKNOWN</ContentType>
 		<Title>Working Title G1000</Title>
 		<Manufacturer/>
 		<Creator>Working Title</Creator>
@@ -10,61 +10,70 @@
 		<CanBeReferenced>false</CanBeReferenced>
 	</Flags>
 	<AssetGroups>
-		<AssetGroup Name="workingtitle-core-library">
-			<Type>Copy</Type>
+		<AssetGroup Name="ContentInfo">
+			<Type>ContentInfo</Type>
 			<Flags>
 				<FSXCompatibility>false</FSXCompatibility>
 			</Flags>
-			<AssetDir>src\workingtitle-core-library</AssetDir>
-			<OutputDir>.\</OutputDir>
+			<AssetDir>PackageDefinitions\workingtitle-g1000-metapackage\ContentInfo</AssetDir>
+			<OutputDir>ContentInfo\workingtitle-g1000-metapackage</OutputDir>
 		</AssetGroup>
 		<AssetGroup Name="workingtitle-aircraft-bonanza-g36">
 			<Type>Copy</Type>
 			<Flags>
 				<FSXCompatibility>false</FSXCompatibility>
 			</Flags>
-			<AssetDir>src\workingtitle-aircraft-bonanza-g36</AssetDir>
+			<AssetDir>src\workingtitle-aircraft-bonanza-g36\</AssetDir>
 			<OutputDir>.\</OutputDir>
 		</AssetGroup>
-        <AssetGroup Name="workingtitle-base-aircraft-common">
+		<AssetGroup Name="workingtitle-base-aircraft-common">
 			<Type>Copy</Type>
 			<Flags>
 				<FSXCompatibility>false</FSXCompatibility>
 			</Flags>
-			<AssetDir>src\workingtitle-base-aircraft-common</AssetDir>
+			<AssetDir>src\workingtitle-base-aircraft-common\</AssetDir>
 			<OutputDir>.\</OutputDir>
 		</AssetGroup>
-        <AssetGroup Name="workingtitle-vcockpits-instruments-navsystems">
+		<AssetGroup Name="workingtitle-core-library">
 			<Type>Copy</Type>
 			<Flags>
 				<FSXCompatibility>false</FSXCompatibility>
 			</Flags>
-			<AssetDir>src\workingtitle-vcockpits-instruments-navsystems</AssetDir>
+			<AssetDir>src\workingtitle-core-library\</AssetDir>
 			<OutputDir>.\</OutputDir>
 		</AssetGroup>
-        <AssetGroup Name="workingtitle-vcockpits-instruments-navsystems-g1000">
+		<AssetGroup Name="workingtitle-g1000-docs">
 			<Type>Copy</Type>
 			<Flags>
 				<FSXCompatibility>false</FSXCompatibility>
 			</Flags>
-			<AssetDir>src\workingtitle-vcockpits-instruments-navsystems-g1000</AssetDir>
+			<AssetDir>docs\workingtitle-g1000\</AssetDir>
 			<OutputDir>.\</OutputDir>
 		</AssetGroup>
-        <AssetGroup Name="workingtitle-vcockpits-instruments">
+		<AssetGroup Name="workingtitle-vcockpits-instruments">
 			<Type>Copy</Type>
 			<Flags>
 				<FSXCompatibility>false</FSXCompatibility>
 			</Flags>
-			<AssetDir>src\workingtitle-vcockpits-instruments</AssetDir>
+			<AssetDir>src\workingtitle-vcockpits-instruments\</AssetDir>
 			<OutputDir>.\</OutputDir>
 		</AssetGroup>
-        <AssetGroup Name="workingtitle-g1000-docs">
+		<AssetGroup Name="workingtitle-vcockpits-instruments-navsystems">
 			<Type>Copy</Type>
 			<Flags>
 				<FSXCompatibility>false</FSXCompatibility>
 			</Flags>
-			<AssetDir>docs\workingtitle-g1000</AssetDir>
+			<AssetDir>src\workingtitle-vcockpits-instruments-navsystems\</AssetDir>
+			<OutputDir>.\</OutputDir>
+		</AssetGroup>
+		<AssetGroup Name="workingtitle-vcockpits-instruments-navsystems-g1000">
+			<Type>Copy</Type>
+			<Flags>
+				<FSXCompatibility>false</FSXCompatibility>
+			</Flags>
+			<AssetDir>src\workingtitle-vcockpits-instruments-navsystems-g1000\</AssetDir>
 			<OutputDir>.\</OutputDir>
 		</AssetGroup>
 	</AssetGroups>
 </AssetPackage>
+
